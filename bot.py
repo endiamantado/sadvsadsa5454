@@ -6,7 +6,7 @@ from flask import Flask, request
 import urllib3
 
 # Reemplaza con tu token de bot
-TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')  # Usa variables de entorno para el token
+TOKEN = os.getenv('7342680297:AAFhPjtIVsYn8f7hISqSuUZWoK5gYelzbrA')  # Usa variables de entorno para el token
 bot = telebot.TeleBot(TOKEN)
 
 # URL del webhook
