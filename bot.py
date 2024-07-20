@@ -185,26 +185,21 @@ def handle_download_choice(call):
     elif call.data == "no_download":
         bot.reply_to(call.message, '<b>No se ha descargado el archivo.</b>', parse_mode='HTML')
 
+
+
+# Manejador de actualizaciones entrantes del bot
 @server.route('/' + TOKEN, methods=['POST'])
+def getMessage():
+    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "!", 200
+
+# Configurar el webhook
+@server.route("/")
 def webhook():
-    json_str = request.get_data(as_text=True)
-    update = telebot.types.Update.de_json(json_str)
-    bot.process_new_updates([update])
-    return '', 200
-
-@server.route('/setwebhook', methods=['GET', 'POST'])
-def set_webhook():
-    webhook_url = WEBHOOK_URL
     bot.remove_webhook()
-    bot.set_webhook(url=webhook_url)
-    return 'Webhook set', 200
-
-@server.route('/')
-def index():
-    return 'Bot encendido culiau', 200
-
-def run():
-    server.run(host='0.0.0.0', port=PORT)
+    bot.set_webhook(url=WEBHOOK_URL)
+    return "BOT ENCENDIDO CULIAU", 200
 
 if __name__ == "__main__":
-    run()
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    server.run(host="0.0.0.0", port=PORT)
