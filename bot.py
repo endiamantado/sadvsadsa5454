@@ -10,7 +10,7 @@ TOKEN = '7342680297:AAFhPjtIVsYn8f7hISqSuUZWoK5gYelzbrA'  # Usa variables de ent
 bot = telebot.TeleBot(TOKEN)
 
 # URL del webhook
-WEBHOOK_URL = "https://loginfinder.onrender.com/"
+WEBHOOK_URL = "https://sadvsadsa5454.onrender.com"
 PORT = int(os.environ.get('PORT', 5000))
 
 # FLASK
