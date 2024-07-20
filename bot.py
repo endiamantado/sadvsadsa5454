@@ -99,6 +99,9 @@ def handle_url_command(message):
     if 'http' in url.lower():
         bot.reply_to(message, 'El URL no puede contener la palabra "http".')
         return
+    if 'www' in url.lower():
+        bot.reply_to(message, 'El URL no puede contener la palabra "www".')
+        return
 
     bot.reply_to(message, '[ 🔍 ] Iniciando búsqueda, esto puede tardar...')
     time.sleep(5)
