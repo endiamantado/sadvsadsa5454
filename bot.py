@@ -190,15 +190,18 @@ def handle_download_choice(call):
 # Manejador de actualizaciones entrantes del bot
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return "!", 200
+    if request.method == 'POST':
+        bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+        return "!", 200
+    else:
+        return "Method Not Allowed", 405
 
 # Configurar el webhook
 @server.route("/")
-def webhook():
+def set_webhook():
     bot.remove_webhook()
     bot.set_webhook(url=WEBHOOK_URL + '/' + TOKEN)
-    return "BOT ENCENDIDO CULIAU", 200
+    return "Webhook configurado correctamente", 200
 
 if __name__ == "__main__":
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
