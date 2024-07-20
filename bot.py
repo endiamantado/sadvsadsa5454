@@ -57,7 +57,7 @@ def extract_details(text):
 def create_results_files(results):
     """Crea archivos de texto con los resultados y devuelve las rutas."""
     filenames = []
-    chunk_size = 10000
+    chunk_size = 70000
     for i in range(0, len(results), chunk_size):
         chunk = results[i:i + chunk_size]
         filename = f'search_results_part_{i // chunk_size + 1}.txt'
