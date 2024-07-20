@@ -2,13 +2,32 @@ import telebot
 from telebot import types
 import os
 import time
+from flask import Flask, request
+import urllib3
 
 # Reemplaza con tu token de bot
-TOKEN = '7342680297:AAFhPjtIVsYn8f7hISqSuUZWoK5gYelzbrA'
+TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')  # Usa variables de entorno para el token
 bot = telebot.TeleBot(TOKEN)
 
+# URL del webhook
+WEBHOOK_URL = "https://loginfinder.onrender.com/"  # Ajusta según tu configuración
+PORT = int(os.environ.get('PORT', 5000))
+
+# FLASK
+server = Flask(__name__)
+
 # Lista de archivos de texto
-DIRECTORY = ['ar-full-teleconsultado-PantherSearchBot-part1.txt', 'ar-full-teleconsultado-PantherSearchBot-part2.txt', 'ar-full-teleconsultado-PantherSearchBot-part3.txt', 'ar-full-teleconsultado-PantherSearchBot-part4.txt', 'ar-full-teleconsultado-PantherSearchBot-part5.txt', 'ar-full-teleconsultado-PantherSearchBot-part6.txt', 'cup pami-full-teleconsultado-PantherSearchBot-part1.txt', 'gob ar-full-teleconsultado-PantherSearchBot-part1.txt', 'gov ar-full-teleconsultado-PantherSearchBot-part1.txt'] 
+DIRECTORY = [
+    'ar-full-teleconsultado-PantherSearchBot-part1.txt', 
+    'ar-full-teleconsultado-PantherSearchBot-part2.txt', 
+    'ar-full-teleconsultado-PantherSearchBot-part3.txt', 
+    'ar-full-teleconsultado-PantherSearchBot-part4.txt', 
+    'ar-full-teleconsultado-PantherSearchBot-part5.txt', 
+    'ar-full-teleconsultado-PantherSearchBot-part6.txt', 
+    'cup pami-full-teleconsultado-PantherSearchBot-part1.txt', 
+    'gob ar-full-teleconsultado-PantherSearchBot-part1.txt', 
+    'gov ar-full-teleconsultado-PantherSearchBot-part1.txt'
+]
 
 # Variable global para almacenar los resultados encontrados
 global_results = []
@@ -37,7 +56,7 @@ def extract_details(text):
 
 def create_results_file(results):
     """Crea un archivo de texto con los resultados y devuelve la ruta."""
-    filename = 'search_results.txt'
+    filename = f'search_results_{int(time.time())}.txt'
     with open(filename, 'w') as file:
         for entry in results:
             details = extract_details(entry)
@@ -63,7 +82,7 @@ def handle_url_command(message):
 
     url = args[1]
 
-    print(f"el usuario {user_id} ha solicitado una URL: {url}")
+    print(f"El usuario {user_id} ha solicitado una URL: {url}")
 
     # Verificar que el URL tenga al menos 3 caracteres y no contenga la palabra "https"
     if len(url) < 3:
@@ -145,121 +164,47 @@ def handle_download_choice(call):
             bot.reply_to(call.message, '<b>El archivo se está enviando, por favor espere!</b>', parse_mode='HTML')
 
             # Esperar un momento antes de enviar el archivo
-            time.sleep(5)  # Espera de 5 segundos
+            time.sleep(1)
 
-            if global_filename:
-                # Enviar el archivo
-                with open(global_filename, 'rb') as file:
-                    bot.send_document(call.message.chat.id, file, caption="✅ Archivo Entregado | @Fiscalizacion")
-                    print(f"el usuario {user_id} ha descargado un archivo")
+            # Enviar el archivo generado
+            with open(global_filename, 'rb') as file:
+                bot.send_document(call.message.chat.id, file)
 
-                # Eliminar el archivo después de enviarlo
-                os.remove(global_filename)
-                global_filename = None  # Limpiar la variable global
+            # Eliminar el archivo después de enviarlo
+            os.remove(global_filename)
 
-                # Restar un token
-                tokens[user_id] -= 1
-                bot.reply_to(call.message, f"📉 Busquedas Disponibles: {tokens.get(user_id, 0)}.")
-            else:
-                bot.reply_to(call.message, "❗ No se encontró el archivo de resultados.")
+            # Actualizar la cantidad de tokens disponibles
+            tokens[user_id] = tokens.get(user_id, 0) - 1
+
+            # Confirmar la descarga
+            bot.reply_to(call.message, '<b>Archivo enviado exitosamente!</b>', parse_mode='HTML')
+
         else:
-            bot.reply_to(call.message, "❗ No tienes suficientes tokens para descargar el archivo. Para comprar más, contacta a @teleconsultado")
+            bot.reply_to(call.message, "❗ No tienes tokens disponibles. Por favor, adquiere más tokens para usar esta opción.")
 
     elif call.data == "no_download":
-        bot.reply_to(call.message, 'No descargaste el archivo.')
-        if global_filename and os.path.exists(global_filename):
-            # Elimina el archivo solo si existe
-            os.remove(global_filename)
-            global_filename = None  # Limpiar la variable global
+        bot.reply_to(call.message, '<b>No se ha descargado el archivo.</b>', parse_mode='HTML')
 
-    # Editar el mensaje original para eliminar el teclado
-    bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
+@server.route('/' + TOKEN, methods=['POST'])
+def webhook():
+    json_str = request.get_data(as_text=True)
+    update = telebot.types.Update.de_json(json_str)
+    bot.process_new_updates([update])
+    return '', 200
 
-# Manejar los callbacks de los botones en línea
-@bot.callback_query_handler(func=lambda call: True)
-def callback_query(call):
-    handle_download_choice(call)
+@server.route('/setwebhook', methods=['GET', 'POST'])
+def set_webhook():
+    webhook_url = WEBHOOK_URL
+    bot.remove_webhook()
+    bot.set_webhook(url=webhook_url)
+    return 'Webhook set', 200
 
-# Comando /start
-@bot.message_handler(commands=['start'])
-def handle_start(message):
-    bot.reply_to(message, "Bienvenido al bot! Usa /url [URL] para buscar en los archivos.")
-    print("ejecutaron /start")
+@server.route('/')
+def index():
+    return 'Bot encendido culiau', 200
 
-# Comando /tokens
-@bot.message_handler(commands=['tokens'])
-def handle_tokens(message):
-    user_id = message.from_user.id
-    user_tokens = tokens.get(user_id, 0)
-    print(f"el usuario {user_id} ha solicitado ver sus tokens")
-    bot.reply_to(message, f"📊 Busquedas Disponibles: {user_tokens}")
+def run():
+    server.run(host='0.0.0.0', port=PORT)
 
-# Comando /whitelist (solo para el administrador)
-@bot.message_handler(commands=['whitelist'])
-def handle_whitelist(message):
-    if message.from_user.id != ADMIN_ID:
-        bot.reply_to(message, "❗ Solo el administrador puede usar este comando.")
-        return
-
-    if not tokens:
-        bot.reply_to(message, "La lista de tokens está vacía.")
-        return
-
-    whitelist_message = "📝 Lista de usuarios y sus tokens:\n\n"
-    for user_id, token_count in tokens.items():
-        user = bot.get_chat_member(message.chat.id, user_id)
-        username = user.user.username if user.user.username else "No disponible"
-        whitelist_message += f"ID: {user_id}, Usuario: @{username}, Tokens: {token_count}\n"
-
-    bot.reply_to(message, whitelist_message)
-
-# Comando /add (solo para el administrador)
-@bot.message_handler(commands=['add'])
-def handle_add(message):
-    if message.from_user.id != ADMIN_ID:
-        bot.reply_to(message, "❗ Solo el administrador puede usar este comando.")
-        return
-
-    args = message.text.split()
-    if len(args) != 3:
-        bot.reply_to(message, 'Uso: /add [ID] [NUMERO_DE_TOKENS]')
-        return
-
-    user_id = int(args[1])
-
-    print(f"el usuario {user_id} ha solicitado agregar tokens")
-    try:
-        num_tokens = int(args[2])
-    except ValueError:
-        bot.reply_to(message, 'El número de tokens debe ser un número entero.')
-        return
-
-    if user_id in tokens:
-        tokens[user_id] += num_tokens
-    else:
-        tokens[user_id] = num_tokens
-
-    bot.reply_to(message, f"Tokens añadidos: {num_tokens} tokens para el usuario ID {user_id}")
-    print(f"se agrego {num_tokens} tokens al usuario {user_id}")
-
-# Comando /delwhitelist (solo para el administrador)
-@bot.message_handler(commands=['delwhitelist'])
-def handle_delwhitelist(message):
-    if message.from_user.id != ADMIN_ID:
-        bot.reply_to(message, "❗ Solo el administrador puede usar este comando.")
-        return
-
-    args = message.text.split()
-    if len(args) != 2:
-        bot.reply_to(message, 'Uso: /delwhitelist [ID]')
-        return
-
-    user_id = int(args[1])
-    if user_id in tokens:
-        del tokens[user_id]
-        bot.reply_to(message, f"Usuario con ID {user_id} eliminado de la whitelist.")
-    else:
-        bot.reply_to(message, f"No se encontró al usuario con ID {user_id} en la whitelist.")
-
-# Ejecutar el bot
-bot.polling()
+if __name__ == "__main__":
+    run()
