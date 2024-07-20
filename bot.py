@@ -1,8 +1,7 @@
+from flask import Flask, request
 import telebot
-from telebot import types
 import os
 import time
-from flask import Flask, request
 import urllib3
 
 # Reemplaza con tu token de bot
@@ -10,7 +9,7 @@ TOKEN = '7342680297:AAFhPjtIVsYn8f7hISqSuUZWoK5gYelzbrA'  # Usa variables de ent
 bot = telebot.TeleBot(TOKEN)
 
 # URL del webhook
-WEBHOOK_URL = "https://loginfinder.onrender.com/"  # Ajusta según tu configuración
+WEBHOOK_URL = "https://loginfinder.onrender.com/"
 PORT = int(os.environ.get('PORT', 5000))
 
 # FLASK
@@ -289,7 +288,6 @@ def getMessage():
     else:
         return "Method Not Allowed", 405
 
-# Configurar el webhook
 @server.route("/")
 def set_webhook():
     bot.remove_webhook()
