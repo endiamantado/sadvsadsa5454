@@ -54,17 +54,22 @@ def extract_details(text):
             details['DateAdded'] = line[len('DateAdded: '):]
     return details
 
-def create_results_file(results):
-    """Crea un archivo de texto con los resultados y devuelve la ruta."""
-    filename = 'search_results.txt'
-    with open(filename, 'w') as file:
-        for entry in results:
-            details = extract_details(entry)
-            file.write(f"URL: {details.get('URL', 'No disponible')}\n"
-                       f"USERNAME: {details.get('USERNAME', 'No disponible')}\n"
-                       f"PASSWORD: {details.get('PASSWORD', 'No disponible')}\n"
-                       f"DateAdded: {details.get('DateAdded', 'No disponible')}\n\n")
-    return filename
+def create_results_files(results):
+    """Crea archivos de texto con los resultados y devuelve las rutas."""
+    filenames = []
+    chunk_size = 2000
+    for i in range(0, len(results), chunk_size):
+        chunk = results[i:i + chunk_size]
+        filename = f'search_results_part_{i // chunk_size + 1}.txt'
+        with open(filename, 'w') as file:
+            for entry in chunk:
+                details = extract_details(entry)
+                file.write(f"URL: {details.get('URL', 'No disponible')}\n"
+                           f"USERNAME: {details.get('USERNAME', 'No disponible')}\n"
+                           f"PASSWORD: {details.get('PASSWORD', 'No disponible')}\n"
+                           f"DateAdded: {details.get('DateAdded', 'No disponible')}\n\n")
+        filenames.append(filename)
+    return filenames
 
 @bot.message_handler(commands=['url'])
 def handle_url_command(message):
@@ -129,9 +134,9 @@ def handle_url_command(message):
             # Eliminar el último '\n\n' para una mejor presentación
             response = response.strip()
 
-            # Crear el archivo con los resultados
+            # Crear los archivos con los resultados
             global global_filename
-            global_filename = create_results_file(global_results)
+            global_filename = create_results_files(global_results)
 
             # Contar el total de resultados en el archivo generado
             total_results = len(global_results)
@@ -139,7 +144,7 @@ def handle_url_command(message):
             # Enviar los resultados encontrados primero
             bot.send_message(message.chat.id, f'<b>Total de Resultados Encontrados:</b> <code>{total_results}</code> \n\n' + response, parse_mode='HTML')
 
-            # Preguntar si el usuario desea descargar el archivo
+            # Preguntar si el usuario desea descargar los archivos
             markup = types.InlineKeyboardMarkup()
             markup.add(types.InlineKeyboardButton("Sí", callback_data="download_all"))
             markup.add(types.InlineKeyboardButton("No", callback_data="no_download"))
@@ -161,38 +166,40 @@ def handle_download_choice(call):
         # Verificar si el usuario tiene tokens disponibles
         if tokens.get(user_id, 0) > 0:
             # Enviar el mensaje de "Archivo enviándose"
-            bot.reply_to(call.message, '<b>El archivo se está enviando, por favor espere!</b>', parse_mode='HTML')
+            bot.reply_to(call.message, '<b>Los archivos se están enviando, por favor espere!</b>', parse_mode='HTML')
 
-            # Esperar un momento antes de enviar el archivo
+            # Esperar un momento antes de enviar los archivos
             time.sleep(5)  # Espera de 5 segundos
 
             if global_filename:
-                # Enviar el archivo
-                with open(global_filename, 'rb') as file:
-                    bot.send_document(call.message.chat.id, file, caption="✅ Archivo Entregado | @Fiscalizacion")
-                    print(f"el usuario {user_id} ha descargado el archivo de {url}")
+                # Enviar los archivos
+                for filename in global_filename:
+                    with open(filename, 'rb') as file:
+                        bot.send_document(call.message.chat.id, file, caption="✅ Archivo Entregado | @Fiscalizacion")
+                        print(f"el usuario {user_id} ha descargado el archivo de {filename}")
 
-                # Eliminar el archivo después de enviarlo
-                os.remove(global_filename)
-                global_filename = None  # Limpiar la variable global
+                # Eliminar los archivos después de enviarlos
+                for filename in global_filename:
+                    if os.path.exists(filename):
+                        os.remove(filename)
+                global_filename = []  # Limpiar la variable global
 
-                # Restar un token
+                # Restar un token después de enviar los archivos
                 tokens[user_id] -= 1
                 bot.reply_to(call.message, f"📉 Busquedas Disponibles: {tokens.get(user_id, 0)}.")
             else:
-                bot.reply_to(call.message, "❗ No se encontró el archivo de resultados.")
+                bot.reply_to(call.message, "❗ No se encontraron archivos de resultados.")
         else:
-            bot.reply_to(call.message, "❗ No tienes suficientes tokens para descargar el archivo. Para comprar más, contacta a @teleconsultado")
+            bot.reply_to(call.message, "❗ No tienes suficientes tokens para descargar los archivos. Para comprar más, contacta a @teleconsultado")
 
     elif call.data == "no_download":
-        bot.reply_to(call.message, 'No descargaste el archivo.')
-        if global_filename and os.path.exists(global_filename):
-            # Elimina el archivo solo si existe
-            os.remove(global_filename)
-            global_filename = None  # Limpiar la variable global
-
-    # Editar el mensaje original para eliminar el teclado
-    bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
+        bot.reply_to(call.message, 'No descargaste los archivos.')
+        if global_filename:
+            # Elimina los archivos solo si existen
+            for filename in global_filename:
+                if os.path.exists(filename):
+                    os.remove(filename)
+            global_filename = []  # Limpiar la variable global
 
 # Manejar los callbacks de los botones en línea
 @bot.callback_query_handler(func=lambda call: True)
