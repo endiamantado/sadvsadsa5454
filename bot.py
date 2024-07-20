@@ -196,8 +196,8 @@ def getMessage():
 # Configurar el webhook
 @server.route("/")
 def webhook():
-    bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK_URL)
+    bot.remove_webhook()  # Remove any existing webhook
+    bot.set_webhook(url=WEBHOOK_URL)  # Set the new webhook
     return "BOT ENCENDIDO CULIAU", 200
 
 if __name__ == "__main__":
