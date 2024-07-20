@@ -209,7 +209,7 @@ def callback_query(call):
 # Comando /start
 @bot.message_handler(commands=['start'])
 def handle_start(message):
-    bot.reply_to(message, "Bienvenido al bot! Usa /url [URL] para buscar en los archivos.")
+    bot.reply_to(message, "Bienvenido al bot! Usa /url [URL] para buscar en los archivos, para consultar tokens, utiliza /tokens.")
     print("ejecutaron /start")
 
 # Comando /tokens
