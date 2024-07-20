@@ -8,7 +8,7 @@ TOKEN = '7342680297:AAFhPjtIVsYn8f7hISqSuUZWoK5gYelzbrA'
 bot = telebot.TeleBot(TOKEN)
 
 # Lista de archivos de texto
-DIRECTORY = ['ar-full-teleconsultado-PantherSearchBot-part6.txt'] 
+DIRECTORY = ['ar-full-teleconsultado-PantherSearchBot-part1.txt', 'ar-full-teleconsultado-PantherSearchBot-part2.txt', 'ar-full-teleconsultado-PantherSearchBot-part3.txt', 'ar-full-teleconsultado-PantherSearchBot-part4.txt', 'ar-full-teleconsultado-PantherSearchBot-part5.txt', 'ar-full-teleconsultado-PantherSearchBot-part6.txt', 'cup pami-full-teleconsultado-PantherSearchBot-part1.txt', 'gob ar-full-teleconsultado-PantherSearchBot-part1.txt', 'gov ar-full-teleconsultado-PantherSearchBot-part1.txt'] 
 
 # Variable global para almacenar los resultados encontrados
 global_results = []
