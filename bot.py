@@ -238,9 +238,13 @@ def handle_whitelist(message):
 
     whitelist_message = "📝 Lista de usuarios y sus tokens:\n\n"
     for user_id, token_count in tokens.items():
-        user = bot.get_chat_member(message.chat.id, user_id)
-        username = user.user.username if user.user.username else "No disponible"
-        whitelist_message += f"ID: {user_id}, Usuario: @{username}, Tokens: {token_count}\n"
+        try:
+            user = bot.get_chat_member(message.chat.id, user_id)
+            username = user.user.username if user.user.username else "No disponible"
+            whitelist_message += f"ID: {user_id}, Usuario: @{username}, Tokens: {token_count}\n"
+        except Exception as e:
+            whitelist_message += f"ID: {user_id}, Usuario: No disponible, Tokens: {token_count}\n"
+            print(f"Error al obtener información del usuario {user_id}: {e}")
 
     bot.reply_to(message, whitelist_message)
 
