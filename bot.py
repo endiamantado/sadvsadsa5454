@@ -28,7 +28,8 @@ DIRECTORY = [
     'gob ar-full-teleconsultado-PantherSearchBot-part1.txt', 
     'gov ar-full-teleconsultado-PantherSearchBot-part1.txt',
     'a-full-teleconsultado-PantherSearchBot-part1.txt',
-    'banco-full-teleconsultado-PantherSearchBot-part1.txt'
+    'banco-full-teleconsultado-PantherSearchBot-part1.txt',
+    'file_0.txt'
 ]
 
 # Variable global para almacenar los resultados encontrados
