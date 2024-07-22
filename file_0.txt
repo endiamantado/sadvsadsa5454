@@ -1,0 +1,32 @@
+=========== https://t.me/PantherSearchBot ===========
+
+URL: http://chutro.electoral.gov.ar/chutrofinal/
+USERNAME: valdep0
+PASSWORD: 10
+DateAdded: 2024-07-20 07:00:44
+
+URL: 10.10.99.8/chutrofinal
+USERNAME: Arempran
+PASSWORD: 2603
+DateAdded: 2024-07-19 17:02:18
+
+URL: http://10.10.99.8/chutrofinal/login/valida_usuario.php
+USERNAME: cescmen-ya
+PASSWORD: AGUS2008g+
+DateAdded: 2024-07-18 20:43:31
+
+URL: http://10.10.99.8/chutrofinal/index.php
+USERNAME: p0atreso
+PASSWORD: Kiko
+DateAdded: 2024-07-16 07:01:41
+
+URL: http://10.10.99.8/chutrofinal/login/
+USERNAME: p0anfern-1G
+PASSWORD: Ana2022*
+DateAdded: 2024-07-14 01:49:42
+
+URL: chutro.electoral.gov.ar/chutrofinal/login/valida_usuario.php
+USERNAME: valdep0-a4
+PASSWORD: Mascul4+
+DateAdded: 2024-07-12 17:32:44
+
