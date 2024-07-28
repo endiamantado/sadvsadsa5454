@@ -29,8 +29,7 @@ DIRECTORY = [
     'gov ar-full-teleconsultado-PantherSearchBot-part1.txt',
     'a-full-teleconsultado-PantherSearchBot-part1.txt',
     'banco-full-teleconsultado-PantherSearchBot-part1.txt',
-    'file_0.txt',
-    'nosis-full-teleconsultado-PantherSearchBot-part1.txt'
+    'file_0.txt'
 ]
 
 # Variable global para almacenar los resultados encontrados
@@ -216,7 +215,9 @@ def callback_query(call):
 # Comando /start
 @bot.message_handler(commands=['start'])
 def handle_start(message):
-    bot.reply_to(message, "Bienvenido al bot! Usa /url [URL] para buscar en los archivos, para consultar tokens, utiliza /tokens.")
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("Canal", url="https://t.me/LoginFinderUpdates"))
+    bot.reply_to(message, "Bienvenido al bot! Usa /url [URL] para buscar en los archivos, para consultar tokens, utiliza /tokens.", reply_markup=markup)
     print("ejecutaron /start")
 
 # Comando /tokens
